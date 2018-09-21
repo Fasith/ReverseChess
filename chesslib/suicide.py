@@ -1,6 +1,6 @@
 import time
 import chess.variant
-from random import randint
+'''from random import randint
 
 board = chess.variant.SuicideBoard()
 Flag = True
@@ -35,3 +35,4 @@ while (True):
 
 print("GAME_OVER")
 print(board.result())
+'''
