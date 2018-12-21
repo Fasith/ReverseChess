@@ -1,4 +1,5 @@
 import time
+import random
 import board
 import pieces
 import Tkinter as tk
@@ -13,7 +14,7 @@ class BoardGuiTk(tk.Frame):
     selected_piece = None
     hilighted = None
     icons = {}
-
+    play=0
     color1 = "white"
     color2 = "grey"
 
@@ -41,7 +42,6 @@ class BoardGuiTk(tk.Frame):
 
         self.canvas.bind("<Configure>", self.refresh)
         self.canvas.bind("<Button-1>", self.click)
-
         self.statusbar = tk.Frame(self, height=64)
         self.button_quit = tk.Button(self.statusbar, text="New", fg="black", command=self.reset)
         self.button_quit.pack(side=tk.LEFT, in_=self.statusbar)
@@ -68,7 +68,6 @@ class BoardGuiTk(tk.Frame):
         position = self.chessboard.letter_notation((current_row, current_column))
         piece = self.chessboard[position]
 
-
         if self.selected_piece:
             self.move(self.selected_piece[1], position)
             self.selected_piece = None
@@ -76,20 +75,40 @@ class BoardGuiTk(tk.Frame):
             self.pieces = {}
             self.refresh()
             self.draw_pieces()
+            self.canvas.after(200, self.opponent)
+            self.canvas.after(200, self.refresh)
+            self.canvas.after(200, self.draw_pieces)
+        else:    
+            self.hilight(position)
+            self.refresh()
 
-        self.hilight(position)
-        self.refresh()
+    def opponent(self):
+        if self.play==0:
+            return
+        self.play=0
+        valid_move=self.check()
+        k=random.randint(0,len(valid_move))-1
+        p3,p4=valid_move[k].split("+")
+        piece = self.chessboard[p3]
+        try:
+            self.chessboard.move(p3,p4)
+        except board.ChessError as error:
+            self.label_status["text"] = error.__class__.__name__
+        else:
+            self.label_status["text"] = " " + piece.color.capitalize() +": "+ p3 + p4
 
     def move(self, p1, p2):
         valid_move=self.check()
         piece = self.chessboard[p1]
         dest_piece = self.chessboard[p2]
         flag=1
-        if p2 in valid_move:
+        val=p1+'+'+p2
+        if val in valid_move:
             flag=0
         if flag==1:
             return 
         if dest_piece is None or dest_piece.color != piece.color:
+            self.play=1;
             try:
                 self.chessboard.move(p1,p2)
             except board.ChessError as error:
@@ -107,10 +126,10 @@ class BoardGuiTk(tk.Frame):
                 if piece is not None and (piece.color == self.chessboard.player_turn):
                     for k in range(0,len(piece.possible_moves(pos))):
                         pos1=piece.possible_moves(pos)[k]
-                        valid_moves.append(pos1)
+                        valid_moves.append(pos+'+'+pos1)
                         piece2=self.chessboard[pos1]
                         if piece2 is not None:
-                            v_m.append(pos1)
+                            v_m.append(pos+'+'+pos1)
         if len(v_m)>0:
             return v_m
         else:
@@ -177,6 +196,8 @@ class BoardGuiTk(tk.Frame):
 
                 self.addpiece(piecename, self.icons[filename], x, y)
                 self.placepiece(piecename, x, y)
+
+        #time.sleep(2)
 
     def reset(self):
         self.chessboard.load(board.FEN_STARTING)
