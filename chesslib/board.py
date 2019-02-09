@@ -141,6 +141,75 @@ class Board(dict):
                 if moves: result += moves
         return result
 
+    #minmax algo
+    def minmax(self, count_turns, p3, p4):
+        tmp = deepcopy(self)
+        tmp.move(p3,p4)
+        if count_turns==0:
+            return tmp.state_value()
+        valid_move=tmp.check()
+        if count_turns%2==0:
+            optimum=-1000
+        else:
+            optimum=1000
+        for i in range(0,len(valid_move)):
+            p3,p4=valid_move[i].split("+")
+            k=tmp.minmax(count_turns+1,p3,p4)
+            if count_turns%2==0:
+                if k>optimum:
+                    optimum=k
+            else:
+                if k<optimum:
+                    optimum=k
+        return optimum
+
+    def check(self):
+        valid_moves=[]
+        v_m=[]
+        for i in range (0,8):
+            for j in range (0,8):
+                pos = self.letter_notation((i,j))
+                piece = self[pos]
+                if piece is not None and (piece.color == self.player_turn):
+                    for k in range(0,len(piece.possible_moves(pos))):
+                        pos1=piece.possible_moves(pos)[k]
+                        valid_moves.append(pos+'+'+pos1)
+                        piece2=self[pos1]
+                        if piece2 is not None:
+                            v_m.append(pos+'+'+pos1)
+        if len(v_m)>0:
+            return v_m
+        else:
+            return valid_moves
+    #state of board
+    def state_value(self):
+        sum=0
+        for i in range (0,8):
+            for j in range (0,8):
+                pos = self.letter_notation((i,j))
+                piece = self[pos]
+                if piece is not None:
+                    sum+=self.assign_val(piece.abbriviation)
+        return sum
+
+    #assign value to piece
+    def assign_val(self, piecename):
+        value = {
+        'R':5,
+        'N':3,
+        'B':3,
+        'Q':9,
+        'K':2,
+        'P':1,
+        'r':-5,
+        'n':-3,
+        'b':-3,
+        'q':-9,
+        'k':-2,
+        'p':-1
+        }
+        return value.get(piecename, 0)
+
     def occupied(self, color):
         '''
             Return a list of coordinates occupied by `color`
