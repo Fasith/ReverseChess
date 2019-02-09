@@ -145,7 +145,7 @@ class Board(dict):
     def minmax(self, count_turns, p3, p4):
         tmp = deepcopy(self)
         tmp.move(p3,p4)
-        if count_turns==0:
+        if count_turns==1:
             return tmp.state_value()
         valid_move=tmp.check()
         if count_turns%2==0:
