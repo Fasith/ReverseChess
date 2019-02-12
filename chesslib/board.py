@@ -3,6 +3,7 @@ from copy import deepcopy
 
 import pieces
 import re
+import time
 
 class ChessError(Exception): pass
 class InvalidCoord(ChessError): pass
@@ -101,15 +102,18 @@ class Board(dict):
         del self[p1]
         self[p2] = piece
 
-    def _finish_move(self, piece, dest, p1, p2):
-        '''
-            Set next player turn, count moves, log moves, etc.
-        '''
+    def set_next_turn(self,piece):
         enemy = self.get_enemy(piece.color)
         if piece.color == 'black':
             self.fullmove_number += 1
         self.halfmove_clock +=1
         self.player_turn = enemy
+
+    def _finish_move(self, piece, dest, p1, p2):
+        '''
+            Set next player turn, count moves, log moves, etc.
+        '''
+        self.set_next_turn(piece)
         abbr = piece.abbriviation
         if abbr == 'P':
             # Pawn has no letter
@@ -142,26 +146,39 @@ class Board(dict):
         return result
 
     #minmax algo
-    def minmax(self, count_turns, p3, p4):
-        tmp = deepcopy(self)
-        tmp.move(p3,p4)
+    def minmax(self, count_turns, p1, p2, alpha ,beta):
+        #tmp = deepcopy(self)  
+       # print p1,p2
+        self._do_move(p1,p2)
         if count_turns==1:
-            return tmp.state_value()
-        valid_move=tmp.check()
+            value=self.state_value()
+            return value
         if count_turns%2==0:
-            optimum=-1000
+            self.player_turn="white"
         else:
-            optimum=1000
+            self.player_turn="black"
+        valid_move=self.check()
         for i in range(0,len(valid_move)):
             p3,p4=valid_move[i].split("+")
-            k=tmp.minmax(count_turns+1,p3,p4)
+            piece2=self[p4]
+            if alpha>=beta:
+                break;
+            k=self.minmax(count_turns+1,p3,p4,alpha,beta)
+            self._do_move(p4, p3)
+            if piece2 is not None:
+                self[p4]=piece2
             if count_turns%2==0:
-                if k>optimum:
-                    optimum=k
+                self.player_turn="white"
+                if k>alpha:
+                    alpha=k
             else:
-                if k<optimum:
-                    optimum=k
-        return optimum
+                self.player_turn="black"
+                if k<beta:
+                    beta=k
+        if count_turns%2==0:
+            return alpha
+        else:
+            return beta
 
     def check(self):
         valid_moves=[]

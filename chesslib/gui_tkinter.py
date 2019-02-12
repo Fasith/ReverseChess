@@ -6,7 +6,14 @@ import Tkinter as tk
 from PIL import Image, ImageTk
 from copy import deepcopy
 #import suicide
-
+class ChessError(Exception): pass
+class InvalidCoord(ChessError): pass
+class InvalidColor(ChessError): pass
+class InvalidMove(ChessError): pass
+class Check(ChessError): pass
+class CheckMate(ChessError): pass
+class Draw(ChessError): pass
+class NotYourTurn(ChessError): pass
 #board = chess.variant.SuicideBoard()
 
 class BoardGuiTk(tk.Frame):
@@ -90,15 +97,26 @@ class BoardGuiTk(tk.Frame):
             return
         self.play=0
         valid_move=self.chessboard.check()
-      #  k=random.randint(0,len(valid_move))-1
+        if len(valid_move)==0:
+            raise CheckMate 
+       # k=random.randint(0,len(valid_move))-1
        # p3,p4=valid_move[k].split("+")
-        optimum=-1000
+        alpha=-10000
+        beta=10000
         print self.chessboard.state_value()
         for i in range(0,len(valid_move)):
             p3,p4=valid_move[i].split("+")
-            k=self.chessboard.minmax(0,p3,p4)
-            if k>optimum:
-                optimum=k
+            piece2=self.chessboard[p4]
+            if alpha>beta:
+                break;
+            k=self.chessboard.minmax(0,p3,p4,alpha,beta)
+            self.chessboard._do_move(p4, p3)
+            if piece2 is not None:
+                self.chessboard[p4]=piece2
+            #print self.chessboard[p4],p4
+            self.chessboard.player_turn="black"
+            if k>alpha:
+                alpha=k
                 p5=p3
                 p6=p4
         piece = self.chessboard[p5]
