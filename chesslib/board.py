@@ -3,6 +3,7 @@ from copy import deepcopy
 
 import pieces
 import re
+import time
 
 class ChessError(Exception): pass
 class InvalidCoord(ChessError): pass
@@ -101,15 +102,18 @@ class Board(dict):
         del self[p1]
         self[p2] = piece
 
-    def _finish_move(self, piece, dest, p1, p2):
-        '''
-            Set next player turn, count moves, log moves, etc.
-        '''
+    def set_next_turn(self,piece):
         enemy = self.get_enemy(piece.color)
         if piece.color == 'black':
             self.fullmove_number += 1
         self.halfmove_clock +=1
         self.player_turn = enemy
+
+    def _finish_move(self, piece, dest, p1, p2):
+        '''
+            Set next player turn, count moves, log moves, etc.
+        '''
+        self.set_next_turn(piece)
         abbr = piece.abbriviation
         if abbr == 'P':
             # Pawn has no letter
@@ -140,6 +144,88 @@ class Board(dict):
                 moves = self[coord].possible_moves(coord)
                 if moves: result += moves
         return result
+
+    #minmax algo
+    def minmax(self, count_turns, p1, p2, alpha ,beta):
+        #tmp = deepcopy(self)  
+       # print p1,p2
+        self._do_move(p1,p2)
+        if count_turns==1:
+            value=self.state_value()
+            return value
+        if count_turns%2==0:
+            self.player_turn="white"
+        else:
+            self.player_turn="black"
+        valid_move=self.check()
+        for i in range(0,len(valid_move)):
+            p3,p4=valid_move[i].split("+")
+            piece2=self[p4]
+            if alpha>=beta:
+                break;
+            k=self.minmax(count_turns+1,p3,p4,alpha,beta)
+            self._do_move(p4, p3)
+            if piece2 is not None:
+                self[p4]=piece2
+            if count_turns%2==0:
+                self.player_turn="white"
+                if k>alpha:
+                    alpha=k
+            else:
+                self.player_turn="black"
+                if k<beta:
+                    beta=k
+        if count_turns%2==0:
+            return alpha
+        else:
+            return beta
+
+    def check(self):
+        valid_moves=[]
+        v_m=[]
+        for i in range (0,8):
+            for j in range (0,8):
+                pos = self.letter_notation((i,j))
+                piece = self[pos]
+                if piece is not None and (piece.color == self.player_turn):
+                    for k in range(0,len(piece.possible_moves(pos))):
+                        pos1=piece.possible_moves(pos)[k]
+                        valid_moves.append(pos+'+'+pos1)
+                        piece2=self[pos1]
+                        if piece2 is not None:
+                            v_m.append(pos+'+'+pos1)
+        if len(v_m)>0:
+            return v_m
+        else:
+            return valid_moves
+    #state of board
+    def state_value(self):
+        sum=0
+        for i in range (0,8):
+            for j in range (0,8):
+                pos = self.letter_notation((i,j))
+                piece = self[pos]
+                if piece is not None:
+                    sum+=self.assign_val(piece.abbriviation)
+        return sum
+
+    #assign value to piece
+    def assign_val(self, piecename):
+        value = {
+        'R':5,
+        'N':3,
+        'B':3,
+        'Q':9,
+        'K':2,
+        'P':1,
+        'r':-5,
+        'n':-3,
+        'b':-3,
+        'q':-9,
+        'k':-2,
+        'p':-1
+        }
+        return value.get(piecename, 0)
 
     def occupied(self, color):
         '''

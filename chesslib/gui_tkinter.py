@@ -4,8 +4,16 @@ import board
 import pieces
 import Tkinter as tk
 from PIL import Image, ImageTk
+from copy import deepcopy
 #import suicide
-
+class ChessError(Exception): pass
+class InvalidCoord(ChessError): pass
+class InvalidColor(ChessError): pass
+class InvalidMove(ChessError): pass
+class Check(ChessError): pass
+class CheckMate(ChessError): pass
+class Draw(ChessError): pass
+class NotYourTurn(ChessError): pass
 #board = chess.variant.SuicideBoard()
 
 class BoardGuiTk(tk.Frame):
@@ -82,23 +90,46 @@ class BoardGuiTk(tk.Frame):
             self.hilight(position)
             self.refresh()
 
+
+    #implement computer's move
     def opponent(self):
         if self.play==0:
             return
         self.play=0
-        valid_move=self.check()
-        k=random.randint(0,len(valid_move))-1
-        p3,p4=valid_move[k].split("+")
-        piece = self.chessboard[p3]
+        valid_move=self.chessboard.check()
+        if len(valid_move)==0:
+            raise CheckMate 
+       # k=random.randint(0,len(valid_move))-1
+       # p3,p4=valid_move[k].split("+")
+        alpha=-10000
+        beta=10000
+        print self.chessboard.state_value()
+        for i in range(0,len(valid_move)):
+            p3,p4=valid_move[i].split("+")
+            piece2=self.chessboard[p4]
+            if alpha>beta:
+                break;
+            k=self.chessboard.minmax(0,p3,p4,alpha,beta)
+            self.chessboard._do_move(p4, p3)
+            if piece2 is not None:
+                self.chessboard[p4]=piece2
+            #print self.chessboard[p4],p4
+            self.chessboard.player_turn="black"
+            if k>alpha:
+                alpha=k
+                p5=p3
+                p6=p4
+        piece = self.chessboard[p5]
         try:
-            self.chessboard.move(p3,p4)
+            self.chessboard.move(p5,p6)
         except board.ChessError as error:
             self.label_status["text"] = error.__class__.__name__
         else:
-            self.label_status["text"] = " " + piece.color.capitalize() +": "+ p3 + p4
+            self.label_status["text"] = " " + piece.color.capitalize() +": "+ p5 + p6
 
+    #actual move made here
     def move(self, p1, p2):
-        valid_move=self.check()
+        valid_move=self.chessboard.check()
         piece = self.chessboard[p1]
         dest_piece = self.chessboard[p2]
         flag=1
@@ -115,25 +146,6 @@ class BoardGuiTk(tk.Frame):
                 self.label_status["text"] = error.__class__.__name__
             else:
                 self.label_status["text"] = " " + piece.color.capitalize() +": "+ p1 + p2
-
-    def check(self):
-        valid_moves=[]
-        v_m=[]
-        for i in range (0,8):
-            for j in range (0,8):
-                pos = self.chessboard.letter_notation((i,j))
-                piece = self.chessboard[pos]
-                if piece is not None and (piece.color == self.chessboard.player_turn):
-                    for k in range(0,len(piece.possible_moves(pos))):
-                        pos1=piece.possible_moves(pos)[k]
-                        valid_moves.append(pos+'+'+pos1)
-                        piece2=self.chessboard[pos1]
-                        if piece2 is not None:
-                            v_m.append(pos+'+'+pos1)
-        if len(v_m)>0:
-            return v_m
-        else:
-            return valid_moves
 
 
     def hilight(self, pos):
