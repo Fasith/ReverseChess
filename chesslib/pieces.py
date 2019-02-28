@@ -58,15 +58,16 @@ class Piece(object):
             directions = diag
         elif orthogonal:
             directions = orth
-
+        all_moves=board.occupied('white') + board.occupied('black')
+        piece_moves=board.occupied(piece.color)
         for x,y in directions:
             collision = False
             for step in range(1, distance+1):
                 if collision: break
                 dest = from_[0]+step*x, from_[1]+step*y
-                if self.board.letter_notation(dest) not in board.occupied('white') + board.occupied('black'):
+                if self.board.letter_notation(dest) not in all_moves:
                     legal_moves.append(dest)
-                elif self.board.letter_notation(dest) in board.occupied(piece.color):
+                elif self.board.letter_notation(dest) in piece_moves:
                     collision = True
                 else:
                     legal_moves.append(dest)
