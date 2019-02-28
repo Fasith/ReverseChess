@@ -16,7 +16,8 @@ class NotYourTurn(ChessError): pass
 
 FEN_STARTING = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 RANK_REGEX = re.compile(r"^[A-Z][1-8]$")
-
+total_time=0
+count_moves=0
 class Board(dict):
     '''
        Board
@@ -147,17 +148,22 @@ class Board(dict):
 
     #minmax algo
     def minmax(self, count_turns, p1, p2, alpha ,beta):
-        #tmp = deepcopy(self)  
-       # print p1,p2
+        global total_time
+        
+        global count_moves
+        count_moves+=1
+        #print count_moves
         self._do_move(p1,p2)
-        if count_turns==1:
+        if count_turns==2:
             value=self.state_value()
             return value
         if count_turns%2==0:
             self.player_turn="white"
         else:
             self.player_turn="black"
+        start=time.time()
         valid_move=self.check()
+        end=time.time()
         for i in range(0,len(valid_move)):
             p3,p4=valid_move[i].split("+")
             piece2=self[p4]
@@ -175,12 +181,15 @@ class Board(dict):
                 self.player_turn="black"
                 if k<beta:
                     beta=k
+        total_time+=end-start
+        print(total_time)
         if count_turns%2==0:
             return alpha
         else:
             return beta
 
     def check(self):
+        global total_time
         valid_moves=[]
         v_m=[]
         for i in range (0,8):
@@ -188,12 +197,16 @@ class Board(dict):
                 pos = self.letter_notation((i,j))
                 piece = self[pos]
                 if piece is not None and (piece.color == self.player_turn):
-                    for k in range(0,len(piece.possible_moves(pos))):
-                        pos1=piece.possible_moves(pos)[k]
+                    all_moves=piece.possible_moves(pos)
+                    start=time.time()
+                    for k in range(0,len(all_moves)):
+                        pos1=all_moves[k]
                         valid_moves.append(pos+'+'+pos1)
                         piece2=self[pos1]
                         if piece2 is not None:
-                            v_m.append(pos+'+'+pos1)
+                            v_m.append(pos+'+'+pos1) 
+                    end = time.time()   
+        #print(total_time)
         if len(v_m)>0:
             return v_m
         else:

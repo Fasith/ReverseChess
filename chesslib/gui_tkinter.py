@@ -15,7 +15,6 @@ class CheckMate(ChessError): pass
 class Draw(ChessError): pass
 class NotYourTurn(ChessError): pass
 #board = chess.variant.SuicideBoard()
-
 class BoardGuiTk(tk.Frame):
     pieces = {}
     selected = None
@@ -103,7 +102,8 @@ class BoardGuiTk(tk.Frame):
        # p3,p4=valid_move[k].split("+")
         alpha=-10000
         beta=10000
-        print self.chessboard.state_value()
+        #print self.chessboard.state_value()
+        start=time.time()
         for i in range(0,len(valid_move)):
             p3,p4=valid_move[i].split("+")
             piece2=self.chessboard[p4]
@@ -119,6 +119,8 @@ class BoardGuiTk(tk.Frame):
                 alpha=k
                 p5=p3
                 p6=p4
+        end=time.time()
+        print("total time is ",end-start)
         piece = self.chessboard[p5]
         try:
             self.chessboard.move(p5,p6)
