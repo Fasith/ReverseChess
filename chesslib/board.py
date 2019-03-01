@@ -148,45 +148,47 @@ class Board(dict):
 
     #minmax algo
     def minmax(self, count_turns, p1, p2, alpha ,beta):
+        #tmp = deepcopy(self)  
+       # print p1,p2
         global total_time
-        
-        global count_moves
-        count_moves+=1
-        #print count_moves
+        st=time.time()
         self._do_move(p1,p2)
-        if count_turns==2:
+        if count_turns==4:
             value=self.state_value()
             return value
         if count_turns%2==0:
             self.player_turn="white"
+            valid_move=self.check()
+            for i in range(0,len(valid_move)):
+                p3,p4=valid_move[i].split("+")
+                piece2=self[p4]
+                k=self.minmax(count_turns+1,p3,p4,alpha,beta)
+                self.player_turn="white"
+                self._do_move(p4, p3)
+                if piece2 is not None:
+                    self[p4]=piece2
+                if k<beta:
+                        beta=k
+                if alpha>=beta:
+                    break;
+            return beta
+                
         else:
             self.player_turn="black"
-        start=time.time()
-        valid_move=self.check()
-        end=time.time()
-        for i in range(0,len(valid_move)):
-            p3,p4=valid_move[i].split("+")
-            piece2=self[p4]
-            if alpha>=beta:
-                break;
-            k=self.minmax(count_turns+1,p3,p4,alpha,beta)
-            self._do_move(p4, p3)
-            if piece2 is not None:
-                self[p4]=piece2
-            if count_turns%2==0:
-                self.player_turn="white"
-                if k>alpha:
-                    alpha=k
-            else:
+            valid_move=self.check()
+            for i in range(0,len(valid_move)):
+                p3,p4=valid_move[i].split("+")
+                piece2=self[p4]
+                k=self.minmax(count_turns+1,p3,p4,alpha,beta)
                 self.player_turn="black"
-                if k<beta:
-                    beta=k
-        total_time+=end-start
-        print(total_time)
-        if count_turns%2==0:
+                self._do_move(p4, p3)
+                if piece2 is not None:
+                    self[p4]=piece2
+                if k > alpha:
+                    alpha=k
+                if alpha>=beta:
+                    break
             return alpha
-        else:
-            return beta
 
     def check(self):
         global total_time
