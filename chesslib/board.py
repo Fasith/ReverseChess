@@ -1,9 +1,77 @@
 from itertools import groupby
 from copy import deepcopy
-
+import gui_tkinter as gui
 import pieces
 import re
 import time
+from Tkinter import *
+photoking=PhotoImage(file="img/blackk.png")
+photobishop=PhotoImage(file="img/blackb.png")
+photoknight=PhotoImage(file="img/blackn.png")
+photoqueen=PhotoImage(file="img/blackq.png")
+photorook=PhotoImage(file="img/blackr.png")
+images=[photoking,photoqueen,photoknight,photobishop,photorook]
+
+def pawnpromotion(root,images,b,p2):
+    ppd=pawnpromotiondialog(root,images,b,p2)
+    print type(b)
+bd=None
+class pawnpromotiondialog():
+
+    
+    def __init__(self, parent,images,b,p2):
+        self.board=b
+        self.pos=p2
+        top = self.top = Toplevel(parent)
+        top.configure(background='black')
+        #top.geometry('100x800')
+        Label(top,text="Congradulations you have a pawn promotion!",font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=10,row=0,column=0)
+        Label(top,text="Pick a piece",fg='white',font=("bold italic", 15, "bold"),height=2,bg='black').grid(padx=10,row=1,column=0)
+        pieces_avail=['King','Queen','Knight','Bishop','Rook']
+        k=2
+        
+        #photo2=PhotoImage(file="img/lackb.png")
+        #print photo,photo2
+        #button.config(image=photo,width="40",height="40",activebackground="black")
+
+        for i,j in zip(pieces_avail,images):
+            button = Button(top,command=lambda x=i:self.click(x),bg='#FFC300',image=j,width=500,height=64)#.config(image=photo,width="40",height="40",activebackground="black")
+            button.grid(row=k,column=0)
+            k=k+1
+
+    def click(self,x):
+        global bd
+       # global desired
+       
+        if(x=='King'):
+            pawn=pieces.King('white')
+            pawn.place(self.board)
+            
+        elif(x=='Queen'):
+            pawn=pieces.Queen('white')
+            pawn.place(self.board)
+        elif(x=='Knight'):
+            pawn=pieces.Knight('white')
+            pawn.place(self.board)
+        elif(x=='Bishop'):
+            pawn=pieces.Bishop('white')
+            pawn.place(self.board)
+        elif(x=='Rook'):
+            pawn=pieces.Rook('white')
+            pawn.place(self.board)
+         
+        self.board[self.pos]=pawn
+        print self.pos
+        #self.board[self.pos]=pawn
+        #bod=gui.BoardGuiTk(gui.root,self.board,64)
+        #bod.refresh()
+        #bd=self.board
+        print self.board,self.pos
+        #gui.refresh()
+        self.top.destroy()
+        
+
+
 
 class ChessError(Exception): pass
 class InvalidCoord(ChessError): pass
@@ -109,11 +177,35 @@ class Board(dict):
             self.fullmove_number += 1
         self.halfmove_clock +=1
         self.player_turn = enemy
-
+ 
     def _finish_move(self, piece, dest, p1, p2):
         '''
             Set next player turn, count moves, log moves, etc.
         '''
+        print p1.lower(),p1.upper(),p2.lower(),p2.upper(),piece.color,piece,type(piece.color),type(piece),piece=='p',piece.color=='white',p2[0],p2[1],p2[1]=='3'
+       #promotion for player#8
+        if(p2[1]=='3' and piece.color=='white'and piece.abbriviation.lower()=='p'):
+            #print 'hello'
+           # gui.desired=p2
+            
+            p=pawnpromotion(gui.root,images,self,p2);
+           
+            #1
+        elif(p2[1]=='6' and piece.color=='black'and piece.abbriviation.lower()=='p'):
+            #print 'hello'
+            pawn=pieces.Knight(piece.color)
+            pawn.place(self)
+            #print 'hello',pawn.abbriviation,pawn.color 
+            self[p2]=pawn
+             
+            #dic={'a':0,'b':1,'c':2,'d':3,'e':4,'f':5,'g':6,'h':7}
+            #row=p2[1]
+            #col=dic[p2[0].lower()]
+            #piecename = "%s%s%s" % (pawn.abbriviation, row, col)
+            #filename = "img/%s%s.png" % (pawn.color, pawn.abbriviation.lower())
+            #gui.addpiece(self, piecename, self.icons[filename], row, column)
+        
+          
         self.set_next_turn(piece)
         abbr = piece.abbriviation
         if abbr == 'P':
@@ -153,7 +245,7 @@ class Board(dict):
         global total_time
         st=time.time()
         self._do_move(p1,p2)
-        if count_turns==4:
+        if count_turns==1:
             value=self.state_value()
             return value
         if count_turns%2==0:

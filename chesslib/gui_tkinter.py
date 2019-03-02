@@ -3,6 +3,9 @@ import random
 import board
 import pieces
 import Tkinter as tk
+from Tkinter import *
+import tkMessageBox
+
 from PIL import Image, ImageTk
 from copy import deepcopy
 #import suicide
@@ -14,6 +17,10 @@ class Check(ChessError): pass
 class CheckMate(ChessError): pass
 class Draw(ChessError): pass
 class NotYourTurn(ChessError): pass
+
+desired='p2'
+
+
 #board = chess.variant.SuicideBoard()
 class BoardGuiTk(tk.Frame):
     pieces = {}
@@ -218,9 +225,9 @@ class BoardGuiTk(tk.Frame):
         self.refresh()
         self.draw_pieces()
         self.refresh()
-
+root=tk.Tk()
 def display(chessboard):
-    root = tk.Tk()
+    global root
     root.title("Simple Python Chess")
 
     gui = BoardGuiTk(root, chessboard)
@@ -229,6 +236,8 @@ def display(chessboard):
 
     #root.resizable(0,0)
     root.mainloop()
+
+
 
 if __name__ == "__main__":
     display()
