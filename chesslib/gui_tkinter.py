@@ -27,6 +27,10 @@ class BoardGuiTk(tk.Frame):
 
     rows = 8
     columns = 8
+    # Keep Track of no of moves..
+    no_of_moves = 0
+
+
 
     @property
     def canvas_size(self):
@@ -109,7 +113,7 @@ class BoardGuiTk(tk.Frame):
             piece2=self.chessboard[p4]
             if alpha>beta:
                 break;
-            k=self.chessboard.minmax(0,p3,p4,alpha,beta)
+            k=self.chessboard.minmax(0,p3,p4,alpha,beta,depth = self.no_of_moves+2)
             self.chessboard._do_move(p4, p3)
             if piece2 is not None:
                 self.chessboard[p4]=piece2
