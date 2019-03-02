@@ -17,7 +17,6 @@ class NotYourTurn(ChessError): pass
 FEN_STARTING = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 RANK_REGEX = re.compile(r"^[A-Z][1-8]$")
 total_time=0
-count_moves=0
 class Board(dict):
     '''
        Board
@@ -148,65 +147,72 @@ class Board(dict):
 
     #minmax algo
     def minmax(self, count_turns, p1, p2, alpha ,beta):
+        #tmp = deepcopy(self)  
+       # print p1,p2
         global total_time
-        
-        global count_moves
-        count_moves+=1
-        #print count_moves
+        st=time.time()
         self._do_move(p1,p2)
         if count_turns==2:
             value=self.state_value()
             return value
         if count_turns%2==0:
             self.player_turn="white"
+            valid_move=self.check()
+            for i in range(0,len(valid_move)):
+                p3,p4=valid_move[i].split("+")
+                piece2=self[p4]
+                k=self.minmax(count_turns+1,p3,p4,alpha,beta)
+                self.player_turn="white"
+                self._do_move(p4, p3)
+                if piece2 is not None:
+                    self[p4]=piece2
+                if k<beta:
+                        beta=k
+                if alpha>=beta:
+                    break;
+            return beta
+                
         else:
             self.player_turn="black"
-        start=time.time()
-        valid_move=self.check()
-        end=time.time()
-        for i in range(0,len(valid_move)):
-            p3,p4=valid_move[i].split("+")
-            piece2=self[p4]
-            if alpha>=beta:
-                break;
-            k=self.minmax(count_turns+1,p3,p4,alpha,beta)
-            self._do_move(p4, p3)
-            if piece2 is not None:
-                self[p4]=piece2
-            if count_turns%2==0:
-                self.player_turn="white"
-                if k>alpha:
-                    alpha=k
-            else:
+            valid_move=self.check()
+            for i in range(0,len(valid_move)):
+                p3,p4=valid_move[i].split("+")
+                piece2=self[p4]
+                k=self.minmax(count_turns+1,p3,p4,alpha,beta)
                 self.player_turn="black"
-                if k<beta:
-                    beta=k
-        total_time+=end-start
-        print(total_time)
-        if count_turns%2==0:
+                self._do_move(p4, p3)
+                if piece2 is not None:
+                    self[p4]=piece2
+                if k > alpha:
+                    alpha=k
+                if alpha>=beta:
+                    break
             return alpha
-        else:
-            return beta
 
     def check(self):
-        global total_time
         valid_moves=[]
         v_m=[]
-        for i in range (0,8):
-            for j in range (0,8):
-                pos = self.letter_notation((i,j))
+        st1=time.time()
+        temp_moves=self.occupied(self.player_turn)
+        #print(len(temp_moves))
+        for pos in temp_moves:
                 piece = self[pos]
+                #print(piece)
                 if piece is not None and (piece.color == self.player_turn):
+                    st3=time.time()
                     all_moves=piece.possible_moves(pos)
-                    start=time.time()
+                    end3=time.time()
+                    st2=time.time()
                     for k in range(0,len(all_moves)):
                         pos1=all_moves[k]
                         valid_moves.append(pos+'+'+pos1)
                         piece2=self[pos1]
                         if piece2 is not None:
-                            v_m.append(pos+'+'+pos1) 
-                    end = time.time()   
-        #print(total_time)
+                            v_m.append(pos+'+'+pos1)
+                    end2=time.time()
+                    #print(end2-st2)
+        end1=time.time()
+        print(end1-st1,end3-st3)
         if len(v_m)>0:
             return v_m
         else:
@@ -220,6 +226,7 @@ class Board(dict):
                 piece = self[pos]
                 if piece is not None:
                     sum+=self.assign_val(piece.abbriviation)
+        print(sum)
         return sum
 
     #assign value to piece
