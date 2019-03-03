@@ -159,13 +159,11 @@ class Board(dict):
         return result
 
     #minmax algo
-    def minmax(self, count_turns, p1, p2, alpha ,beta):
-        #tmp = deepcopy(self)  
-       # print p1,p2
+    def minmax(self, count_turns, p1, p2, alpha ,beta,depth)
         global total_time
         st=time.time()
         self._do_move(p1,p2)
-        if count_turns==1:
+        if count_turns==depth:
             value=self.state_value()
             return value
         if count_turns%2==0:
@@ -180,26 +178,25 @@ class Board(dict):
                 if piece2 is not None:
                     self[p4]=piece2
                 if k<beta:
-                        beta=k
+                    beta=k
                 if alpha>=beta:
                     break;
-            return beta
-                
+            return beta        
         else:
             self.player_turn="black"
             valid_move=self.check()
             for i in range(0,len(valid_move)):
-                p3,p4=valid_move[i].split("+")
-                piece2=self[p4]
-                k=self.minmax(count_turns+1,p3,p4,alpha,beta)
-                self.player_turn="black"
-                self._do_move(p4, p3)
-                if piece2 is not None:
-                    self[p4]=piece2
-                if k > alpha:
-                    alpha=k
-                if alpha>=beta:
-                    break
+              p3,p4=valid_move[i].split("+")
+              piece2=self[p4]
+              k=self.minmax(count_turns+1,p3,p4,alpha,beta,depth)
+              self.player_turn="black"
+              self._do_move(p4, p3)
+              if piece2 is not None:
+                  self[p4]=piece2
+              if k>alpha:
+                  alpha=k
+              if alpha>=beta:
+                  break
             return alpha
 
     def check(self):
