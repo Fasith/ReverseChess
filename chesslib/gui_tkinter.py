@@ -3,6 +3,9 @@ import random
 import board
 import pieces
 import Tkinter as tk
+from Tkinter import *
+import tkMessageBox
+
 from PIL import Image, ImageTk
 from copy import deepcopy
 #import suicide
@@ -14,7 +17,60 @@ class Check(ChessError): pass
 class CheckMate(ChessError): pass
 class Draw(ChessError): pass
 class NotYourTurn(ChessError): pass
-#board = chess.variant.SuicideBoard()
+root=tk.Tk()
+flag=1
+photoking=PhotoImage(file="img/blackk.png")
+photobishop=PhotoImage(file="img/blackb.png")
+photoknight=PhotoImage(file="img/blackn.png")
+photoqueen=PhotoImage(file="img/blackq.png")
+photorook=PhotoImage(file="img/blackr.png")
+images=[photoking,photoqueen,photoknight,photobishop,photorook]
+
+#if we choose a pawn promotion option
+def clickdialog(x,todestroy,board,p2,sel):
+        if(x=='King'):
+            pawn=pieces.King('white')
+            pawn.place(board)
+        elif(x=='Queen'):
+            pawn=pieces.Queen('white')
+            pawn.place(board)
+        elif(x=='Knight'):
+            pawn=pieces.Knight('white')
+            pawn.place(board)
+        elif(x=='Bishop'):
+            pawn=pieces.Bishop('white')
+            pawn.place(board)
+        elif(x=='Rook'):
+            pawn=pieces.Rook('white')
+            pawn.place(board)
+       
+        board[p2]=pawn
+        sel.selected_piece = None
+        sel.hilighted = None
+        sel.pieces = {}
+        sel.chessboard.get_enemy('black')
+        sel.refresh()
+        sel.draw_pieces()
+        sel.canvas.after(200, sel.opponent)
+        sel.canvas.after(200, sel.refresh)
+        sel.canvas.after(200, sel.draw_pieces)
+        todestroy.destroy()
+        
+class pawnpromotiondialog():
+
+    
+    def __init__(self,parent,board,p2,sel):
+        top = self.top = Toplevel(parent)
+        top.configure(background='black')
+        Label(top,text="Congradulations you have a pawn promotion!",font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=10,row=0,column=0)
+        Label(top,text="Pick a piece",fg='white',font=("bold italic", 15, "bold"),height=2,bg='black').grid(padx=10,row=1,column=0)
+        pieces_avail=['King','Queen','Knight','Bishop','Rook']
+        k=2
+        for i,j in zip(pieces_avail,images):
+            button = Button(top,command=lambda x=i:clickdialog(x,top,board,p2,sel),bg='#FFC300',image=j,width=500,height=64)#.config(image=photo,width="40",height="40",activebackground="black")
+            button.grid(row=k,column=0)
+            k=k+1
+
 class BoardGuiTk(tk.Frame):
     pieces = {}
     selected = None
@@ -67,7 +123,7 @@ class BoardGuiTk(tk.Frame):
         self.button_quit.pack(side=tk.RIGHT, in_=self.statusbar)
         self.statusbar.pack(expand=False, fill="x", side='bottom')
 
-
+    # called on every click
     def click(self, event):
 
         # Figure out which square we've clicked
@@ -78,9 +134,29 @@ class BoardGuiTk(tk.Frame):
 
         position = self.chessboard.letter_notation((current_row, current_column))
         piece = self.chessboard[position]
+        #if pawn promotion move
+        if self.selected_piece and self.selected_piece[0].abbriviation=='P' and position[1]=='8' and self.selected_piece[0].color=='white':
+            #if the move leading to the promotion is valid make the move then ask options
+            #move return 0 if the given move is not valid
+            if(self.move(self.selected_piece[1], position)):
+                p=self.pawnpromotion(root,self.chessboard,position,self)
+            #if the move leading to the promotion is invalid dont perform the move
+            else:
+                self.selected_piece = None
+                self.hilighted = None
+                self.pieces = {}
+                self.refresh()
+                self.draw_pieces()
+                self.canvas.after(200, self.opponent)
+                self.canvas.after(200, self.refresh)
+                self.canvas.after(200, self.draw_pieces)
+               
 
-        if self.selected_piece:
+        #non pawn promotion move 2nd click
+        elif self.selected_piece:
             self.move(self.selected_piece[1], position)
+            print position,self.selected_piece[0].color,type(self.selected_piece[0].abbriviation),type(position)
+            print 'hicalled'
             self.selected_piece = None
             self.hilighted = None
             self.pieces = {}
@@ -89,9 +165,18 @@ class BoardGuiTk(tk.Frame):
             self.canvas.after(200, self.opponent)
             self.canvas.after(200, self.refresh)
             self.canvas.after(200, self.draw_pieces)
+        
+        #1st click on a piece
         else:    
             self.hilight(position)
             self.refresh()
+    #creates the new dialog box for pawn promotion options
+    def pawnpromotion(self,root,b,p2,sel):
+        ppd=pawnpromotiondialog(root,b,p2,sel)
+
+
+
+
 
 
     #implement computer's move
@@ -143,15 +228,17 @@ class BoardGuiTk(tk.Frame):
         if val in valid_move:
             flag=0
         if flag==1:
-            return 
+            return 0
         if dest_piece is None or dest_piece.color != piece.color:
             self.play=1;
             try:
                 self.chessboard.move(p1,p2)
             except board.ChessError as error:
                 self.label_status["text"] = error.__class__.__name__
+                return 0
             else:
                 self.label_status["text"] = " " + piece.color.capitalize() +": "+ p1 + p2
+                return 1
 
 
     def hilight(self, pos):
@@ -224,7 +311,7 @@ class BoardGuiTk(tk.Frame):
         self.refresh()
 
 def display(chessboard):
-    root = tk.Tk()
+    global root
     root.title("Simple Python Chess")
 
     gui = BoardGuiTk(root, chessboard)
@@ -233,6 +320,8 @@ def display(chessboard):
 
     #root.resizable(0,0)
     root.mainloop()
+
+
 
 if __name__ == "__main__":
     display()

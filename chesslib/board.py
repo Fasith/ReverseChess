@@ -1,9 +1,18 @@
 from itertools import groupby
 from copy import deepcopy
-
+import gui_tkinter as gui
 import pieces
 import re
 import time
+from Tkinter import *
+
+
+
+
+    
+        
+
+
 
 class ChessError(Exception): pass
 class InvalidCoord(ChessError): pass
@@ -109,11 +118,14 @@ class Board(dict):
             self.fullmove_number += 1
         self.halfmove_clock +=1
         self.player_turn = enemy
-
+ 
     def _finish_move(self, piece, dest, p1, p2):
-        '''
-            Set next player turn, count moves, log moves, etc.
-        '''
+        #pawn promotion for ai, chooses knight by default
+        if(p2[1]=='1' and piece.color=='black'and piece.abbriviation.lower()=='p'):
+            pawn=pieces.Knight(piece.color)
+            pawn.place(self) 
+            self[p2]=pawn
+
         self.set_next_turn(piece)
         abbr = piece.abbriviation
         if abbr == 'P':
@@ -147,46 +159,45 @@ class Board(dict):
         return result
 
     #minmax algo
-    def minmax(self, count_turns, p1, p2, alpha ,beta,depth):
+    def minmax(self, count_turns, p1, p2, alpha ,beta,depth)
         global total_time
-        
-        global count_moves
-        count_moves+=1
-        #print count_moves
+        st=time.time()
         self._do_move(p1,p2)
         if count_turns==depth:
             value=self.state_value()
             return value
         if count_turns%2==0:
             self.player_turn="white"
-        else:
-            self.player_turn="black"
-        start=time.time()
-        valid_move=self.check()
-        end=time.time()
-        for i in range(0,len(valid_move)):
-            p3,p4=valid_move[i].split("+")
-            piece2=self[p4]
-            if alpha>=beta:
-                break;
-            k=self.minmax(count_turns+1,p3,p4,alpha,beta,depth)
-            self._do_move(p4, p3)
-            if piece2 is not None:
-                self[p4]=piece2
-            if count_turns%2==0:
+            valid_move=self.check()
+            for i in range(0,len(valid_move)):
+                p3,p4=valid_move[i].split("+")
+                piece2=self[p4]
+                k=self.minmax(count_turns+1,p3,p4,alpha,beta)
                 self.player_turn="white"
-                if k>alpha:
-                    alpha=k
-            else:
-                self.player_turn="black"
+                self._do_move(p4, p3)
+                if piece2 is not None:
+                    self[p4]=piece2
                 if k<beta:
                     beta=k
-        total_time+=end-start
-        print(total_time)
-        if count_turns%2==0:
-            return alpha
+                if alpha>=beta:
+                    break;
+            return beta        
         else:
-            return beta
+            self.player_turn="black"
+            valid_move=self.check()
+            for i in range(0,len(valid_move)):
+              p3,p4=valid_move[i].split("+")
+              piece2=self[p4]
+              k=self.minmax(count_turns+1,p3,p4,alpha,beta,depth)
+              self.player_turn="black"
+              self._do_move(p4, p3)
+              if piece2 is not None:
+                  self[p4]=piece2
+              if k>alpha:
+                  alpha=k
+              if alpha>=beta:
+                  break
+            return alpha
 
     def check(self):
         global total_time
