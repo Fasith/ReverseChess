@@ -122,7 +122,7 @@ class Board(dict):
     def _finish_move(self, piece, dest, p1, p2):
         #pawn promotion for ai, chooses knight by default
         if(p2[1]=='1' and piece.color=='black'and piece.abbriviation.lower()=='p'):
-            pawn=pieces.Knight(piece.color)
+            pawn=pieces.Bishop(piece.color)
             pawn.place(self) 
             self[p2]=pawn
 
@@ -170,7 +170,7 @@ class Board(dict):
             self.player_turn="white"
             valid_move=self.check()
             if len(valid_move)==0:
-                return 0
+                return self.state_value()
             for i in range(0,len(valid_move)):
                 p3,p4=valid_move[i].split("+")
                 piece2=self[p4]
@@ -188,7 +188,7 @@ class Board(dict):
             self.player_turn="black"
             valid_move=self.check()
             if len(valid_move)==0:
-                return 0
+                return self.state_value()
             for i in range(0,len(valid_move)):
               p3,p4=valid_move[i].split("+")
               piece2=self[p4]

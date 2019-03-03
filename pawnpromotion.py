@@ -13,7 +13,7 @@ class pawnpromotiondialog:
         #top.geometry('100x800')
         Label(top,text="Congradulations you have a pawn promotion!",font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=10,row=0,column=0)
         Label(top,text="Pick a piece",fg='white',font=("bold italic", 15, "bold"),height=2,bg='black').grid(padx=10,row=1,column=0)
-        pieces_avail=['King','Queen','Knight','Bishop','Rook']
+        pieces_avail=['Queen','Knight','Bishop','Rook']
         k=2
         
         #photo2=PhotoImage(file="img/lackb.png")
