@@ -34,8 +34,9 @@ class pawnpromotiondialog:
         elif(x=='Bishop'):
     	    print 'Bishop'
         elif(x=='Rook'):
-    	    self.top
-    	el
+    	    print 'Rook'
+    	self.top.destroy()
+    
 
 
         #print "value is", self.e.get(),self.f.get(),self.g.get()
