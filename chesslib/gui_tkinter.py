@@ -242,10 +242,17 @@ class BoardGuiTk(tk.Frame):
 
 
     def hilight(self, pos):
+        poss_moves=[]
         piece = self.chessboard[pos]
         if piece is not None and (piece.color == self.chessboard.player_turn):
             self.selected_piece = (self.chessboard[pos], pos)
-            self.hilighted = map(self.chessboard.number_notation, (self.chessboard[pos].possible_moves(pos)))
+            valid_move=self.chessboard.check()
+            for i in range(0,len(valid_move)):
+                p3,p4=valid_move[i].split("+")
+                piece2=self.chessboard[p3]
+                if piece==piece2:
+                    poss_moves.append(p4)
+            self.hilighted = map(self.chessboard.number_notation, (poss_moves))
             
 
     def addpiece(self, name, image, row=0, column=0):
