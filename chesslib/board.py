@@ -159,7 +159,7 @@ class Board(dict):
         return result
 
     #minmax algo
-    def minmax(self, count_turns, p1, p2, alpha ,beta,depth)
+    def minmax(self, count_turns, p1, p2, alpha ,beta,depth):
         global total_time
         st=time.time()
         self._do_move(p1,p2)
@@ -169,10 +169,12 @@ class Board(dict):
         if count_turns%2==0:
             self.player_turn="white"
             valid_move=self.check()
+            if len(valid_move)==0:
+                return 0
             for i in range(0,len(valid_move)):
                 p3,p4=valid_move[i].split("+")
                 piece2=self[p4]
-                k=self.minmax(count_turns+1,p3,p4,alpha,beta)
+                k=self.minmax(count_turns+1,p3,p4,alpha,beta,depth)
                 self.player_turn="white"
                 self._do_move(p4, p3)
                 if piece2 is not None:
@@ -185,6 +187,8 @@ class Board(dict):
         else:
             self.player_turn="black"
             valid_move=self.check()
+            if len(valid_move)==0:
+                return 0
             for i in range(0,len(valid_move)):
               p3,p4=valid_move[i].split("+")
               piece2=self[p4]
