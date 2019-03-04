@@ -235,11 +235,34 @@ class BoardGuiTk(tk.Frame):
                 self.chessboard.move(p1,p2)
             except board.ChessError as error:
                 self.label_status["text"] = error.__class__.__name__
+                self.gameover();
                 return 0
             else:
                 self.label_status["text"] = " " + piece.color.capitalize() +": "+ p1 + p2
+                self.gameover();
                 return 1
 
+    def gameover(self):
+        win=0
+        lose=0
+        whose_turn=self.chessboard.player_turn
+        self.chessboard.player_turn="white"
+        white_moves=self.chessboard.check()
+        if len(white_moves)==0:
+            win=1
+        self.chessboard.player_turn="black"
+        black_moves=self.chessboard.check()
+        if len(black_moves)==0:
+            lose=1
+        if win==1 and lose==1:
+            #tie
+            print "DRAW MATCH"
+        else:
+            if win==1:
+                print "WHITE WINS"
+            else:
+                if lose==1:
+                    print "BLACK WINS"
 
     def hilight(self, pos):
         poss_moves=[]
