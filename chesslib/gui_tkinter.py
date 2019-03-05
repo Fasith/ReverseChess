@@ -26,6 +26,26 @@ photoqueen=PhotoImage(file="img/blackq.png")
 photorook=PhotoImage(file="img/blackr.png")
 images=[photoqueen,photoknight,photobishop,photorook]
 
+
+    
+class winnerdialog:
+
+    
+    def __init__(self,parent,x,guiinst):
+        top=self.top=Toplevel(parent)
+        top.configure(background='black')
+        top.geometry('600x600')
+        if(x in ["white","black"]):
+            Label(top,text="Congradulations "+x+" wins!!!" ,font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=80,row=0,column=0)
+        else:
+            Label(top,text="Draw match" ,font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=150,row=0,column=0)
+        b = Button(top,text="Reset board", command=lambda:self.boardreset(guiinst),bg='#FFC300',width=30)
+        b.grid(row=1,column=0)
+
+    def boardreset(self,guiinst):
+        guiinst.reset()
+        self.top.destroy() 
+            
 #if we choose a pawn promotion option
 def clickdialog(x,todestroy,board,p2,sel):
         if(x=='King'):
@@ -48,7 +68,7 @@ def clickdialog(x,todestroy,board,p2,sel):
         sel.selected_piece = None
         sel.hilighted = None
         sel.pieces = {}
-        sel.chessboard.get_enemy('black')
+        #sel.chessboard.get_enemy('black')
         sel.refresh()
         sel.draw_pieces()
         sel.canvas.after(200, sel.opponent)
@@ -56,7 +76,7 @@ def clickdialog(x,todestroy,board,p2,sel):
         sel.canvas.after(200, sel.draw_pieces)
         todestroy.destroy()
         
-class pawnpromotiondialog():
+class pawnpromotiondialog:
 
     
     def __init__(self,parent,board,p2,sel):
@@ -131,13 +151,16 @@ class BoardGuiTk(tk.Frame):
 
         current_column = event.x / col_size
         current_row = 7 - (event.y / row_size)
-
+        global root
+        
         position = self.chessboard.letter_notation((current_row, current_column))
         piece = self.chessboard[position]
         #if pawn promotion move
         if self.selected_piece and self.selected_piece[0].abbriviation=='P' and position[1]=='8' and self.selected_piece[0].color=='white':
+            #self.winner(root,"white")
             #if the move leading to the promotion is valid make the move then ask options
-            #move return 0 if the given move is not valid
+            #move returns 0 if the given move is not valid
+            
             if(self.move(self.selected_piece[1], position)):
                 p=self.pawnpromotion(root,self.chessboard,position,self)
             #if the move leading to the promotion is invalid dont perform the move
@@ -174,7 +197,8 @@ class BoardGuiTk(tk.Frame):
     def pawnpromotion(self,root,b,p2,sel):
         ppd=pawnpromotiondialog(root,b,p2,sel)
 
-
+    def winner(self,root,x):
+        d=winnerdialog(root,x,self)
 
 
 
@@ -245,6 +269,7 @@ class BoardGuiTk(tk.Frame):
     def gameover(self):
         win=0
         lose=0
+        global root
         whose_turn=self.chessboard.player_turn
         self.chessboard.player_turn="white"
         white_moves=self.chessboard.check()
@@ -256,13 +281,14 @@ class BoardGuiTk(tk.Frame):
             lose=1
         if win==1 and lose==1:
             #tie
-            print "DRAW MATCH"
+            self.winner(root,"tie")
         else:
             if win==1:
-                print "WHITE WINS"
+                self.winner(root,"white")
             else:
                 if lose==1:
-                    print "BLACK WINS"
+                    self.winner(root,"black")
+                  #winner(root,"black")
 
     def hilight(self, pos):
         poss_moves=[]
@@ -336,6 +362,9 @@ class BoardGuiTk(tk.Frame):
 
     def reset(self):
         self.chessboard.load(board.FEN_STARTING)
+        self.selected_piece=None
+        self.hilighted=None
+        self.selected=None
         self.refresh()
         self.draw_pieces()
         self.refresh()
