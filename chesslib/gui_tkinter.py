@@ -34,9 +34,9 @@ class winnerdialog:
     def __init__(self,parent,x,guiinst):
         top=self.top=Toplevel(parent)
         top.configure(background='black')
-        top.geometry('600x600')
+        top.geometry('600x150')
         if(x in ["white","black"]):
-            Label(top,text="Congradulations "+x+" wins!!!" ,font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=80,row=0,column=0)
+            Label(top,text="Congratulations "+x+" wins!!!" ,font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=80,row=0,column=0)
         else:
             Label(top,text="Draw match" ,font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=150,row=0,column=0)
         b = Button(top,text="Reset board", command=lambda:self.boardreset(guiinst),bg='#FFC300',width=30)
@@ -82,7 +82,7 @@ class pawnpromotiondialog:
     def __init__(self,parent,board,p2,sel):
         top = self.top = Toplevel(parent)
         top.configure(background='black')
-        Label(top,text="Congradulations you have a pawn promotion!",font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=10,row=0,column=0)
+        Label(top,text="Congratulations you have a pawn promotion!",font=("bold italic", 15, "bold"),bg='black',fg='white',height=2).grid(padx=10,row=0,column=0)
         Label(top,text="Pick a piece",fg='white',font=("bold italic", 15, "bold"),height=2,bg='black').grid(padx=10,row=1,column=0)
         pieces_avail=['Queen','Knight','Bishop','Rook']
         k=2
@@ -265,6 +265,7 @@ class BoardGuiTk(tk.Frame):
                 self.label_status["text"] = " " + piece.color.capitalize() +": "+ p1 + p2
                 self.gameover();
                 return 1
+            self.gameover();
 
     def gameover(self):
         win=0
@@ -289,6 +290,7 @@ class BoardGuiTk(tk.Frame):
                 if lose==1:
                     self.winner(root,"black")
                   #winner(root,"black")
+        self.chessboard.player_turn=whose_turn
 
     def hilight(self, pos):
         poss_moves=[]
